@@ -1,0 +1,17 @@
+{
+  "name": "kappnav",
+  "version": "1.0.0",
+  "description": "install utilities for kappnav",
+  "private": true,
+  "engines": {
+    "node": "^6.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:kappnav/kappnav.git"
+  },
+  "dependencies": {
+    "js-yaml": "^3.13.1",
+    "get-stdin": "^7.0.0"
+  }
+}

@@ -1,0 +1,15 @@
+# Log file
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+*.irx
+
+**/.DS_Store
+**/.vscode
