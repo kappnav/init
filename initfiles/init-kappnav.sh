@@ -59,7 +59,8 @@
         console=$(echo $config | node /js/getConsoleURL.js)
         rc=$?
         if [ $rc -eq 0 ]; then
-          sed -i "s|ICP_CONSOLE_URL|$console" /initfiles/builtin.yaml
+          echo "Update building.yaml ICP_CONSOLE_URL with "$console
+          sed -i "s|ICP_CONSOLE_URL|$console|" /initfiles/builtin.yaml
         else
           echo Could not retrieve console URL from webconsole-config
         fi

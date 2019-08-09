@@ -20,9 +20,9 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: kappnav-ui-service
 spec:
-  path: /appnav
+  path: /kappmav-ui
   tls:
     termination: edge
   to:
     kind: Service
-    name: ibm-app-nav-ui-service
+    name: kappnav-ui-service

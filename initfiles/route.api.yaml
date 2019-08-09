@@ -26,4 +26,4 @@ spec:
     termination: edge
   to:
     kind: Service
-    name: ibm-app-nav-ui-service
+    name: kappnav-ui-service
