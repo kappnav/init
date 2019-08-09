@@ -20,7 +20,7 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: kappnav-ui-service
 spec:
-  path: /kappmav-ui
+  path: /kappav-ui
   tls:
     termination: edge
   to:
