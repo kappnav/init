@@ -48,9 +48,9 @@ function addRemoveKAppNavButtons(latestOpenShiftVersion, featuredApp, appLaunche
         extensions = webJson.extensions;
     }
     
-    const KAppNavFeaturedAppScript = "https://"+routeHost+"/appnav/openshift/featuredApp.js";
-    const KAppNavAppLauncherScript = "https://"+routeHost+"/appnav/openshift/appLauncher.js";
-    const KAppNavIconScript = "https://"+routeHost+"/appnav/openshift/appNavIcon.css";
+    const KAppNavFeaturedAppScript = "https://"+routeHost+"/kappnav-ui/openshift/featuredApp.js";
+    const KAppNavAppLauncherScript = "https://"+routeHost+"/kappnav-ui/openshift/appLauncher.js";
+    const KAppNavIconScript = "https://"+routeHost+"/kappnav-ui/openshift/appNavIcon.css";
 
     // Adding KAppNav button
     if (featuredApp == "enabled" || appLauncher == "enabled") {

@@ -23,7 +23,8 @@ spec:
   host: HOSTNAME
   path: /kappnav
   tls:
-    termination: edge
+    termination: Reencrypt
+    insecureEdgeTerminationPolicy: Redirect
   to:
     kind: Service
     name: kappnav-ui-service
