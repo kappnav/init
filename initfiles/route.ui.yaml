@@ -20,9 +20,11 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: kappnav-ui-service
 spec:
+  host: 
   path: /kappnav-ui
   tls:
-    termination: edge
+    termination: Reencrypt
+    insecureEdgeTerminationPolicy: Redirect
   to:
     kind: Service
     name: kappnav-ui-service

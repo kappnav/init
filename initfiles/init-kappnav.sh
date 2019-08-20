@@ -20,38 +20,21 @@
   echo "DEBUG: KUBE_ENV="$KUBE_ENV
   echo "DEBUG: HOOK_MODE="$HOOK_MODE
 
-  if [ x$HOOK_MODE = x'postinstall' ]; then
-
-    host=''
-    port=''
+  if [ x$HOOK_MODE = x'preinstall' ]; then
 
     for f in $(ls /initfiles/*.yaml); do
       # skip route.api.yaml because HOSTNAME not yet replaced 
       # to avoid error message in log
       echo examine $f 
       if [ $f != '/initfiles/route.api.yaml' ]; then
-	echo apply $f 
+	      echo apply $f 
         kubectl apply --validate=false -f $f 
       fi
     done
 
-    if [ x$KUBE_ENV = 'xicp' ]; then
+  elif [ x$HOOK_MODE = x'postinstall' ]; then
 
-      host=$(kubectl get configmap ibmcloud-cluster-info --namespace=kube-public -o=jsonpath='{.data.cluster_address}')
-      port=$(kubectl get configmap ibmcloud-cluster-info --namespace=kube-public -o=jsonpath='{.data.cluster_router_https_port}')
-
-      if [ -z "$host" ]; then
-        echo "Didn't find cluster addess in a configmap named ibmcloud-cluster-info in the kube-public namespace. Attempting to get it from the master node."
-        host=$(kubectl get nodes -o=jsonpath='{.items[?(@.metadata.labels.role=="master")].metadata.name}')
-      fi
-
-      if [ -z "$port" ]; then
-        echo "Didn't find cluster router https port in a configmap named ibmcloud-cluster-info in the kube-public namespace. Attempting to get it from the management ingress target port."
-        port=$(kubectl get service icp-management-ingress -n kube-system -o=jsonpath='{.spec.ports[?(@.targetPort)].port}')
-      fi
-      sed -i "s|ICP_CONSOLE_URL|https://$host:$port/console|" /initfiles/builtin.yaml
-
-    elif [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' -o x$KUBE_ENV = 'xocp' ]; then
+    if [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' -o x$KUBE_ENV = 'xocp' ]; then
 
       config=$(kubectl get configmap webconsole-config -n openshift-web-console -o json)
       rc=$?
@@ -67,7 +50,7 @@
       else
         echo Could not retrieve webconsole-config
       fi
-      kubectl apply -f /initfiles/route.appnav.yaml --validate=false
+      # kubectl apply -f /initfiles/route.appnav.yaml --validate=false
       routeHost=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.host})
 
       if [ -z routeHost ]; then 
@@ -88,13 +71,15 @@
         echo 'Could not update kappnav-config config map'
       fi 
 
+      ./OKDConsoleIntegration.sh $routeHost 
+
     elif [ x$KUBE_ENV = 'xminikube' ]; then
         sed -i "s|ICP_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
     else
-      echo host and port values could not be found for KUBE_ENV=$KUBE_ENV
+      echo Unsupported environment:  KUBE_ENV=$KUBE_ENV
     fi
 
-    # TODO: need to decide what to do about these on OKD
+    # TODO: need to decide what to do about these on openshift
 
     sed -i "s|KIBANA_URL|https://$host:$port/kibana/app/kibana|" /initfiles/builtin.yaml
     sed -i "s|GRAFANA_URL|https://$host:$port/grafana|" /initfiles/builtin.yaml
@@ -105,4 +90,3 @@
     kubectl apply --validate=false -f /initfiles/builtin.yaml
 
   fi
-/initfiles/OKDConsoleIntegration.sh $routeHost $
