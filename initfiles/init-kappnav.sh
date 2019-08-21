@@ -88,5 +88,12 @@
     # so set that too, and then create the builtin config map
 
     kubectl apply --validate=false -f /initfiles/builtin.yaml
+    
+  elif [ x$HOOK_MODE = x'predelete' ]; then
 
+    kubectl delete route kappnav-api-service
+    kubectl delete route kappnav-ui-service
+    kubectl delete service kappnav-ui-service
+    kubectl delete configmap builtin
+    
   fi
