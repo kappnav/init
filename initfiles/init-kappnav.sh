@@ -71,7 +71,7 @@
         echo 'Could not update kappnav-config config map'
       fi 
 
-      ./OKDConsoleIntegration.sh $routeHost 
+      /initfiles/OKDConsoleIntegration.sh $routeHost 
 
     elif [ x$KUBE_ENV = 'xminikube' ]; then
         sed -i "s|ICP_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
