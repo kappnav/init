@@ -20,7 +20,8 @@ kind: ConfigMap
 metadata:
   name: builtin
 data:
-  icp-console-url: ICP_CONSOLE_URL
+  openshift-console-url: OPENSHIFT_CONSOLE_URL
+  openshift-admin-console-url: OPENSHIFT_ADMIN_CONSOLE_URL
   kibana-url: KIBANA_URL
   grafana-url: GRAFANA_URL
   liberty-problems-dashboard: Liberty-Problems-K5-20190609
