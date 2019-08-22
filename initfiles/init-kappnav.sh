@@ -20,16 +20,18 @@
   echo "DEBUG: KUBE_ENV="$KUBE_ENV
   echo "DEBUG: HOOK_MODE="$HOOK_MODE
 
+  all_platform_files='app_v1beta1_application.yaml builtin.yaml'
+
   # skip route.api.yaml because HOSTNAME not yet replaced 
   # to avoid error message in log
-  openshift_files='builtin.yaml service.ui.yaml route.ui.yaml'
+  openshift_files=$all_platform_files' service.ui.yaml route.ui.yaml'
   
   # add route.api.yaml to delete list, since it's created later by post init hook
   openshift_delete_files=$openshift_files' route.api.yaml'
 
   # no routes on minikube
   # create dummy secret to satisfy ui deployment 
-  minikube_files='builtin.yaml service.ui.minikube.yaml dummy.secret.yaml'
+  minikube_files=$all_platform_files' service.ui.minikube.yaml dummy.secret.yaml'
 
   if [ x$HOOK_MODE = x'preinstall' ]; then
 
