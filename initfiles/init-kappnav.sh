@@ -20,16 +20,30 @@
   echo "DEBUG: KUBE_ENV="$KUBE_ENV
   echo "DEBUG: HOOK_MODE="$HOOK_MODE
 
+  # skip route.api.yaml because HOSTNAME not yet replaced 
+  # to avoid error message in log
+  openshift_files='builtin.yaml service.ui.yaml route.ui.yaml'
+  
+  # add route.api.yaml to delete list, since it's created later by post init hook
+  openshift_delete_files=$openshift_files' route.api.yaml'
+
+  # no routes on minikube
+  # create dummy secret to satisfy ui deployment 
+  minikube_files='builtin.yaml service.ui.minikube.yaml dummy.secret.yaml'
+
   if [ x$HOOK_MODE = x'preinstall' ]; then
 
-    for f in $(ls /initfiles/*.yaml); do
-      # skip route.api.yaml because HOSTNAME not yet replaced 
-      # to avoid error message in log
-      echo examine $f 
-      if [ $f != '/initfiles/route.api.yaml' ]; then
-	      echo apply $f 
-        kubectl apply --validate=false -f $f 
-      fi
+    if [ x$KUBE_ENV = 'xminikube' ]; then
+      echo 'use minikube file list'
+      filelist=$minikube_files
+    else
+      echo 'use openshift file list'
+      filelist=$openshift_files
+    fi
+
+    for f in $filelist; do
+	    echo apply /initfiles/$f 
+      kubectl apply --validate=false -f /initfiles/$f 
     done
 
   elif [ x$HOOK_MODE = x'postinstall' ]; then
@@ -91,9 +105,17 @@
     
   elif [ x$HOOK_MODE = x'predelete' ]; then
 
-    kubectl delete route kappnav-api-service
-    kubectl delete route kappnav-ui-service
-    kubectl delete service kappnav-ui-service
-    kubectl delete configmap builtin
+    if [ x$KUBE_ENV = 'xminikube' ]; then
+      echo 'use minikube file list'
+      filelist=$minikube_files
+    else
+      echo 'use openshift file list'
+      filelist=$openshift_delete_files
+    fi
+
+    for f in $filelist; do
+	    echo apply $f 
+      kubectl delete -f /initfiles/$f 
+    done
     
   fi
