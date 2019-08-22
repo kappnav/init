@@ -39,13 +39,24 @@
       config=$(kubectl get configmap webconsole-config -n openshift-web-console -o json)
       rc=$?
       if [ $rc -eq 0 ]; then
+        # get openshift console URL
         console=$(echo $config | node /js/getConsoleURL.js)
         rc=$?
         if [ $rc -eq 0 ]; then
-          echo "Update building.yaml ICP_CONSOLE_URL with "$console
-          sed -i "s|ICP_CONSOLE_URL|$console|" /initfiles/builtin.yaml
+          echo "Update builtin.yaml OPENSHIFT_CONSOLE_URL with "$console
+          sed -i "s|OPENSHIFT_CONSOLE_URL|$console|" /initfiles/builtin.yaml
         else
           echo Could not retrieve console URL from webconsole-config
+        fi
+        
+        # get openshift admin console URL
+        adminconsole=$(echo $config | node /js/getAdminConsoleURL.js)
+        rc=$?
+        if [ $rc -eq 0 ]; then
+          echo "Update builtin.yaml OPENSHIFT_ADMIN_CONSOLE_URL with "$adminconsole
+          sed -i "s|OPENSHIFT_ADMIN_CONSOLE_URL|$adminconsole|" /initfiles/builtin.yaml
+        else
+          echo Could not retrieve admin console URL from webconsole-config
         fi
       else
         echo Could not retrieve webconsole-config
@@ -74,7 +85,7 @@
       /initfiles/OKDConsoleIntegration.sh $routeHost 
 
     elif [ x$KUBE_ENV = 'xminikube' ]; then
-        sed -i "s|ICP_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
+        sed -i "s|OPENSHIFT_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
     else
       echo Unsupported environment:  KUBE_ENV=$KUBE_ENV
     fi
