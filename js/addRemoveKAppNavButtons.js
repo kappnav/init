@@ -115,7 +115,12 @@ function addKAppNavButtons(dataJson, webJson, extensions, KAppNavFeaturedAppScri
     // null - represents the replacer function. (in this case we don't want to alter the process)
     // 2 - represents the spaces to indent.
     if (latestOpenShiftVersion == "false") {
-        webYaml = yaml.safeDump(webJson);
+        // default line width for safeDump is 80 so if the URL is long it will end up setting it on new line and it will fail
+        // the next time user try to retrieve any openshift webconsole configmap field as it will give JSON.parse error
+        // example of the setting when the line is longer than 80 is below: ( then ">-" will caused issue for JSON.parse)
+        //- >-
+        //https://kappnav-ui-service-juniarti.apps.9.42.8.126.nip.io/test/foo/BOOtest.js
+        webYaml = yaml.safeDump(webJson, {lineWidth: 200});
         dataJson.data['webconsole-config.yaml'] = webYaml;
     }
     var datasString = JSON.stringify(dataJson, null, 2);
@@ -162,7 +167,12 @@ function removeKAppNavButtons(dataJson, webJson, extensions, KAppNavFeaturedAppS
     // null - represents the replacer function. (in this case we don't want to alter the process)
     // 2 - represents the spaces to indent.
     if (latestOpenShiftVersion == "false") {
-        webYaml = yaml.safeDump(webJson);
+        // default line width for safeDump is 80 so if the URL is long it will end up setting it on new line and it will fail
+        // the next time user try to retrieve any openshift webconsole configmap field as it will give JSON.parse error
+        // example of the setting when the line is longer than 80 is below: ( then ">-" will caused issue for JSON.parse)
+        //- >-
+        //https://kappnav-ui-service-juniarti.apps.9.42.8.126.nip.io/test/foo/BOOtest.js
+        webYaml = yaml.safeDump(webJson, {lineWidth: 200});
         dataJson.data['webconsole-config.yaml'] = webYaml;
     }
     var dataString = JSON.stringify(dataJson, null, 2);
