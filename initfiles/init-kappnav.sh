@@ -48,9 +48,9 @@
       kubectl apply --validate=false -f /initfiles/$f
     done
 
-    for f in $(ls /initfiles/ext-*.yaml); do
+    for f in $(ls /initfiles/ext-*.yaml 2>/dev/null); do
       # apply any extension files
-      echo apply $f 
+      echo apply $f
       kubectl apply --validate=false -f $f
     done
 
