@@ -27,11 +27,16 @@
   openshift_files=$all_platform_files' service.ui.yaml route.ui.yaml'
   
   # add route.api.yaml to delete list, since it's created later by post init hook
-  openshift_delete_files=$openshift_files' route.api.yaml'
+  # Do not delete Application CRD as this causes any 
+  # Application resources to be deleted
+  openshift_delete_files='builtin.yaml service.ui.yaml route.ui.yaml route.api.yaml'
 
   # no routes on minikube
   # create dummy secret to satisfy ui deployment 
   minikube_files=$all_platform_files' service.ui.minikube.yaml dummy.secret.yaml'
+  # Do not delete Application CRD as this causes any 
+  # Application resources to be deleted
+  minikube_delete_files='builtin.yaml service.ui.minikube.yaml dummy.secret.yaml'
 
   if [ x$HOOK_MODE = x'preinstall' ]; then
 
@@ -120,7 +125,7 @@
 
     if [ x$KUBE_ENV = 'xminikube' ]; then
       echo 'use minikube file list'
-      filelist=$minikube_files
+      filelist=$minikube_delete_files
     else
       echo 'use openshift file list'
       filelist=$openshift_delete_files
