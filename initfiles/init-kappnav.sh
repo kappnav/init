@@ -29,7 +29,7 @@
   # add route.api.yaml to delete list, since it's created later by post init hook
   # Do not delete Application CRD as this causes any 
   # Application resources to be deleted
-  openshift_delete_files='builtin.yaml service.ui.yaml route.ui.yaml route.api.yaml'
+  openshift_delete_files='builtin.yaml service.ui.yaml route.ui.yaml'
 
   # no routes on minikube
   # create dummy secret to satisfy ui deployment
