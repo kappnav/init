@@ -22,11 +22,9 @@
 
   all_platform_files='app_v1beta1_application.yaml builtin.yaml'
 
-  # skip route.api.yaml because HOSTNAME not yet replaced
   # to avoid error message in log
   openshift_files=$all_platform_files' service.ui.yaml route.ui.yaml'
-
-  # add route.api.yaml to delete list, since it's created later by post init hook
+  
   # Do not delete Application CRD as this causes any 
   # Application resources to be deleted
   openshift_delete_files='builtin.yaml service.ui.yaml route.ui.yaml'
@@ -97,9 +95,6 @@
       else
          echo 'Retrieved host name '$routeHost
       fi
-
-      sed -i "s|HOSTNAME|$routeHost|" /initfiles/route.api.yaml
-      kubectl apply -f /initfiles/route.api.yaml --validate=false
 
       # now form kappnav URL and store in kappnav config map
 
