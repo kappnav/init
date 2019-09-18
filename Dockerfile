@@ -26,10 +26,14 @@ RUN cd /js; npm install
 # Stage 2: Run node server
 FROM registry.access.redhat.com/ubi7/nodejs-8:1-47
 
+ARG VERSION
+ARG BUILD_DATE
+
 LABEL name="Application Navigator" \
       vendor="kAppNav" \
-      version="1.0.0" \
-      release="1.0.0" \
+      version=$VERSION \
+      release=$VERSION \
+      created=$BUILD_DATE \
       summary="Initialization image for Application Navigator" \
       description="This image contains initialization logic for Application Navigator"
 
@@ -56,7 +60,7 @@ COPY --chown=1001:0 licenses/ /licenses/
 RUN chmod -R 770 /initfiles
 USER 1001
 
-# get application CRD from Kubernetes Application SIG  
+# get application CRD from Kubernetes Application SIG
 RUN wget https://raw.githubusercontent.com/kubernetes-sigs/application/master/config/crds/app_v1beta1_application.yaml -P /initfiles
 
 CMD /initfiles/init-kappnav.sh
