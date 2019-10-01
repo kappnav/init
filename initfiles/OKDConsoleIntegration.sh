@@ -21,6 +21,8 @@ echo "kAppNav to OKD Console Integration"
 routeHost=$1
 echo routehost parm=$routeHost
 
+echo "OKDConsoleIntegration.sh HOOK_MODE = $HOOK_MODE"
+
 # setting default values
 shouldProcessKAppNavButton="false"
 latestOpenShiftVersion="false"
@@ -63,6 +65,12 @@ if [ $shouldProcessKAppNavButton = "true" ]; then
       # Removing App Nav buttons logic
       #===============================
 
+      # On uninstall of appnav remove all OKD console integrations
+      if [ x$HOOK_MODE = x'predelete' ]; then
+         echo "KAppNav being deleted - removing kAppNav items from OKD OpenShift Web Console"
+         featuredAppButton=disabled
+         appLauncherButton=disabled
+      fi
       # Removing app nav button from OKD web console
       if [ $featuredAppButton = "disabled" -o $appLauncherButton = "disabled" ]; then
          echo "Removing kAppNav button from OKD OpenShift Web Console if it is set"
