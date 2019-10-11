@@ -104,8 +104,11 @@
       if [ $? -ne 0 ]; then
         echo 'Could not update kappnav-config config map'
       fi
-
-      /initfiles/OKDConsoleIntegration.sh $routeHost
+      # Only minishift uses the scripts to setup OKD console 
+      # integrations for the time being
+      if [ x$KUBE_ENV == 'xminishift' ]; then
+        /initfiles/OKDConsoleIntegration.sh $routeHost
+      fi
 
     elif [ x$KUBE_ENV = 'xminikube' ]; then
         sed -i "s|OPENSHIFT_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
@@ -124,6 +127,14 @@
     kubectl apply --validate=false -f /initfiles/builtin.yaml
 
   elif [ x$HOOK_MODE = x'predelete' ]; then
+
+    # Delete any OKD console integrations.
+    # Using scripts for now but the controller should do this once 
+    # we get the go install operator
+    if [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' -o x$KUBE_ENV = 'xocp' ]; then
+      routeHost=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.host})
+      /initfiles/OKDConsoleIntegration.sh $routeHost
+    fi
 
     if [ x$KUBE_ENV = 'xminikube' ]; then
       echo 'use minikube file list'
