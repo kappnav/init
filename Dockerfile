@@ -24,7 +24,7 @@ COPY package.json /js/
 RUN cd /js; npm install
 
 # Stage 2: Run node server
-FROM registry.access.redhat.com/ubi7/nodejs-8:1-47
+FROM registry.access.redhat.com/ubi7/nodejs-8
 
 ARG VERSION
 ARG BUILD_DATE
