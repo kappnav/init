@@ -17,6 +17,9 @@
 #*
 #*****************************************************************
 
+  echo `pwd`
+  echo `ls -al`
+  
   echo "DEBUG: KUBE_ENV="$KUBE_ENV
   echo "DEBUG: HOOK_MODE="$HOOK_MODE
 
@@ -24,15 +27,15 @@
 
   # to avoid error message in log
   openshift_files=$all_platform_files' service.ui.yaml route.ui.yaml'
-  
-  # Do not delete Application CRD as this causes any 
+
+  # Do not delete Application CRD as this causes any
   # Application resources to be deleted
   openshift_delete_files='builtin.yaml service.ui.yaml route.ui.yaml'
 
   # no routes on minikube
   # create dummy secret to satisfy ui deployment
   minikube_files=$all_platform_files' service.ui.minikube.yaml dummy.secret.yaml'
-  # Do not delete Application CRD as this causes any 
+  # Do not delete Application CRD as this causes any
   # Application resources to be deleted
   minikube_delete_files='builtin.yaml service.ui.minikube.yaml dummy.secret.yaml'
 
