@@ -122,6 +122,9 @@ RUN chmod -R 770 /initfiles
 RUN curl -fsSLO --compressed https://raw.githubusercontent.com/kubernetes-sigs/application/master/config/crds/app_v1beta1_application.yaml \
     && mv app_v1beta1_application.yaml /initfiles/
 
+# set working dir as it was when using ubi7/nodejs-8 base image
+RUN mkdir -p /opt/app-src/root \
+   && chown 1001:0 /opt/app-src/root
 USER 1001
-
+WORKDIR /opt/app-src/root
 CMD /initfiles/init-kappnav.sh
