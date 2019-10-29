@@ -17,6 +17,9 @@
 #*
 #*****************************************************************
 
+  echo `pwd`
+  echo `ls -al`
+  
   echo "DEBUG: KUBE_ENV="$KUBE_ENV
   echo "DEBUG: HOOK_MODE="$HOOK_MODE
 
@@ -24,15 +27,15 @@
 
   # to avoid error message in log
   openshift_files=$all_platform_files' service.ui.yaml route.ui.yaml'
-  
-  # Do not delete Application CRD as this causes any 
+
+  # Do not delete Application CRD as this causes any
   # Application resources to be deleted
   openshift_delete_files='builtin.yaml service.ui.yaml route.ui.yaml'
 
   # no routes on minikube
   # create dummy secret to satisfy ui deployment
   minikube_files=$all_platform_files' service.ui.minikube.yaml dummy.secret.yaml'
-  # Do not delete Application CRD as this causes any 
+  # Do not delete Application CRD as this causes any
   # Application resources to be deleted
   minikube_delete_files='builtin.yaml service.ui.minikube.yaml dummy.secret.yaml'
 
@@ -104,25 +107,30 @@
       if [ $? -ne 0 ]; then
         echo 'Could not update kappnav-config config map'
       fi
-
-      /initfiles/OKDConsoleIntegration.sh $routeHost
-
-      # get Kibaba host
+      # Only minishift uses the scripts to setup OKD console 
+      # integrations for the time being
+      if [ x$KUBE_ENV == 'xminishift' ]; then
+        /initfiles/OKDConsoleIntegration.sh $routeHost
+      fi
+      
+       # get Kibaba host
       routeKibanaHost=$(kubectl get route logging-kibana -n openshift-logging -o=jsonpath={@.spec.host})
       echo Kibana Host = ${routeKibanaHost}
 
       # get Grafana host
       routeGrafanaHost=$(kubectl get route grafana -n grafana -o=jsonpath={@.spec.host})
       echo Grafana Host = ${routeGrafanaHost}
+
     elif [ x$KUBE_ENV = 'xminikube' ]; then
         sed -i "s|OPENSHIFT_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
     else
       echo Unsupported environment:  KUBE_ENV=$KUBE_ENV
     fi
 
-    # TODO: need to decide what to do about these on openshift
+    # update builtin KIBANA_URL and GRAFANA_URL
     echo "Update builtin.yaml KIBANA_URL with "$routeKibanaHost
     sed -i "s|KIBANA_URL|https://$routeKibanaHost|" /initfiles/builtin.yaml
+    echo "Update builtin.yaml GRAFANA_URL with "$routeGrafanaHost
     sed -i "s|GRAFANA_URL|https://$routeGrafanaHost|" /initfiles/builtin.yaml
 
     # all changes have been made to builtin.yaml at this point except namespace
@@ -131,6 +139,14 @@
     kubectl apply --validate=false -f /initfiles/builtin.yaml
 
   elif [ x$HOOK_MODE = x'predelete' ]; then
+
+    # Delete any OKD console integrations.
+    # Using scripts for now but the controller should do this once 
+    # we get the go install operator
+    if [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' -o x$KUBE_ENV = 'xocp' ]; then
+      routeHost=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.host})
+      /initfiles/OKDConsoleIntegration.sh $routeHost
+    fi
 
     if [ x$KUBE_ENV = 'xminikube' ]; then
       echo 'use minikube file list'
