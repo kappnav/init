@@ -17,21 +17,27 @@
 #*
 #*****************************************************************
 
+  echo `pwd`
+  echo `ls -al`
+  
   echo "DEBUG: KUBE_ENV="$KUBE_ENV
   echo "DEBUG: HOOK_MODE="$HOOK_MODE
 
   all_platform_files='app_v1beta1_application.yaml builtin.yaml'
 
-  # skip route.api.yaml because HOSTNAME not yet replaced 
   # to avoid error message in log
   openshift_files=$all_platform_files' service.ui.yaml route.ui.yaml'
-  
-  # add route.api.yaml to delete list, since it's created later by post init hook
-  openshift_delete_files=$openshift_files' route.api.yaml'
+
+  # Do not delete Application CRD as this causes any
+  # Application resources to be deleted
+  openshift_delete_files='builtin.yaml service.ui.yaml route.ui.yaml'
 
   # no routes on minikube
-  # create dummy secret to satisfy ui deployment 
+  # create dummy secret to satisfy ui deployment
   minikube_files=$all_platform_files' service.ui.minikube.yaml dummy.secret.yaml'
+  # Do not delete Application CRD as this causes any
+  # Application resources to be deleted
+  minikube_delete_files='builtin.yaml service.ui.minikube.yaml dummy.secret.yaml'
 
   if [ x$HOOK_MODE = x'preinstall' ]; then
 
@@ -44,9 +50,16 @@
     fi
 
     for f in $filelist; do
-	    echo apply /initfiles/$f 
-      kubectl apply --validate=false -f /initfiles/$f 
+	    echo apply /initfiles/$f
+      kubectl apply --validate=false -f /initfiles/$f
     done
+
+    for f in $(ls /initfiles/ext-*.yaml 2>/dev/null); do
+      # apply any extension files
+      echo apply $f
+      kubectl apply --validate=false -f $f
+    done
+
 
   elif [ x$HOOK_MODE = x'postinstall' ]; then
 
@@ -64,7 +77,7 @@
         else
           echo Could not retrieve console URL from webconsole-config
         fi
-        
+
         # get openshift admin console URL
         adminconsole=$(echo $config | node /js/getAdminConsoleURL.js)
         rc=$?
@@ -80,25 +93,22 @@
       # kubectl apply -f /initfiles/route.appnav.yaml --validate=false
       routeHost=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.host})
 
-      if [ -z routeHost ]; then 
+      if [ -z routeHost ]; then
          echo 'Could not retrieve host from route kappnav-ui-service'
-      else 
+      else
          echo 'Retrieved host name '$routeHost
-      fi 
+      fi
 
-      sed -i "s|HOSTNAME|$routeHost|" /initfiles/route.api.yaml 
-      kubectl apply -f /initfiles/route.api.yaml --validate=false
-
-      # now form kappnav URL and store in kappnav config map 
+      # now form kappnav URL and store in kappnav config map
 
       routePath=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.path})
       kubectl get configmap kappnav-config -o json |  node /js/storeKeyValueToConfigmap.js kappnav-url https://$routeHost$routePath | kubectl apply -f -
 
       if [ $? -ne 0 ]; then
         echo 'Could not update kappnav-config config map'
-      fi 
+      fi
 
-      /initfiles/OKDConsoleIntegration.sh $routeHost 
+      /initfiles/OKDConsoleIntegration.sh $routeHost
 
     elif [ x$KUBE_ENV = 'xminikube' ]; then
         sed -i "s|OPENSHIFT_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
@@ -115,20 +125,20 @@
     # so set that too, and then create the builtin config map
 
     kubectl apply --validate=false -f /initfiles/builtin.yaml
-    
+
   elif [ x$HOOK_MODE = x'predelete' ]; then
 
     if [ x$KUBE_ENV = 'xminikube' ]; then
       echo 'use minikube file list'
-      filelist=$minikube_files
+      filelist=$minikube_delete_files
     else
       echo 'use openshift file list'
       filelist=$openshift_delete_files
     fi
 
     for f in $filelist; do
-	    echo apply $f 
-      kubectl delete -f /initfiles/$f 
+	    echo apply $f
+      kubectl delete -f /initfiles/$f
     done
-    
+
   fi
