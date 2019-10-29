@@ -129,6 +129,10 @@
 
     kubectl apply --validate=false -f /initfiles/builtin.yaml
 
+    if [ -f /initfiles/plugin-post-init.sh ]; then
+      /initfiles/plugin-post-init.sh
+    fi
+
   elif [ x$HOOK_MODE = x'predelete' ]; then
 
     # Delete any OKD console integrations.
