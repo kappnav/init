@@ -112,26 +112,12 @@
       if [ x$KUBE_ENV == 'xminishift' ]; then
         /initfiles/OKDConsoleIntegration.sh $routeHost
       fi
-      
-       # get Kibaba host
-      routeKibanaHost=$(kubectl get route logging-kibana -n openshift-logging -o=jsonpath={@.spec.host})
-      echo Kibana Host = ${routeKibanaHost}
-
-      # get Grafana host
-      routeGrafanaHost=$(kubectl get route grafana -n grafana -o=jsonpath={@.spec.host})
-      echo Grafana Host = ${routeGrafanaHost}
 
     elif [ x$KUBE_ENV = 'xminikube' ]; then
         sed -i "s|OPENSHIFT_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
     else
       echo Unsupported environment:  KUBE_ENV=$KUBE_ENV
     fi
-
-    # update builtin KIBANA_URL and GRAFANA_URL
-    echo "Update builtin.yaml KIBANA_URL with "$routeKibanaHost
-    sed -i "s|KIBANA_URL|https://$routeKibanaHost|" /initfiles/builtin.yaml
-    echo "Update builtin.yaml GRAFANA_URL with "$routeGrafanaHost
-    sed -i "s|GRAFANA_URL|https://$routeGrafanaHost|" /initfiles/builtin.yaml
 
     # all changes have been made to builtin.yaml at this point except namespace
     # so set that too, and then create the builtin config map

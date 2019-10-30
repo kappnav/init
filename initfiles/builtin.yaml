@@ -22,8 +22,6 @@ metadata:
 data:
   openshift-console-url: OPENSHIFT_CONSOLE_URL
   openshift-admin-console-url: OPENSHIFT_ADMIN_CONSOLE_URL
-  kibana-url: KIBANA_URL
-  grafana-url: GRAFANA_URL
   was-traditional-problems-dashboard: WAS-Traditional-Problems-K5-20190609
   liberty-problems-dashboard: Liberty-Problems-K5-20190909
   liberty-traffic-dashboard: Liberty-Traffic-K5-20190909
