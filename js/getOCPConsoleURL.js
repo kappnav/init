@@ -26,12 +26,12 @@ const getStdin = require('get-stdin');
 
 	var json= JSON.parse(stdin); 
 
-	cfg= json.data['webconsole-config.yaml'];
+	cfg= json.data['console-config.yaml'];
 
 	// Get config or throw exception on error
 	try {
-  		var config = yaml.safeLoad(cfg,"JSON_SCHEMA");
-  		var consoleURL = config.clusterInfo.consoleBaseAddress;
+		  var config = yaml.safeLoad(cfg,"JSON_SCHEMA");
+		  var consoleURL = config.clusterInfo.consoleBaseAddress;
 		  var lastChar = consoleURL.substr(-1);
 		  if (lastCHar == '/') {
 			 // trim off the trailing '/'
