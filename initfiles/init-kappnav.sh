@@ -76,11 +76,16 @@
         if [ $rc -eq 0 ]; then
           echo "Update builtin.yaml OPENSHIFT_CONSOLE_URL with "$console
           sed -i "s|OPENSHIFT_CONSOLE_URL|$console|" /initfiles/builtin.yaml
+          echo "Update builtin.yaml OPENSHIFT_ADMIN_CONSOLE_URL with "$console
+          sed -i "s|OPENSHIFT_ADMIN_CONSOLE_URL|$console|" /initfiles/builtin.yaml
         else
           echo Could not retrieve console URL from console-config
         fi
-    
-    elif [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd']; then
+      else
+          echo Could not retrieve console-config
+      fi
+
+    elif [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' ]; then
       config=$(kubectl get configmap webconsole-config -n openshift-web-console -o json)
       rc=$?
       if [ $rc -eq 0 ]; then
@@ -106,15 +111,12 @@
       else
         echo Could not retrieve webconsole-config
       fi
-      else
-        echo Could not retrieve webconsole-config
-      fi
   
     else
       echo Unsupported environment:  KUBE_ENV=$KUBE_ENV
     fi
 
-    if [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' -o x$KUBE_ENV = 'xocp']; then
+    if [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' -o x$KUBE_ENV = 'xocp' ]; then
       routeHost=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.host})
 
       if [ -z routeHost ]; then

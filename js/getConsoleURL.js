@@ -31,9 +31,9 @@ const getStdin = require('get-stdin');
 	// Get config or throw exception on error
 	try {
   		var config = yaml.safeLoad(cfg,"JSON_SCHEMA");
-  		var consoleURL = config.clusterInfo.consoleBaseAddress;
+  		var consoleURL = config.clusterInfo.consolePublicURL;
 		  var lastChar = consoleURL.substr(-1);
-		  if (lastCHar == '/') {
+		  if (lastChar == '/') {
 			 // trim off the trailing '/'
 			 consoleURL = consoleURL.substr(0, consoleURL.length-1);
 		  }
