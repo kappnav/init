@@ -22,22 +22,20 @@ const yaml = require('js-yaml');
 const getStdin = require('get-stdin');
 
 (async () => {
-    	var stdin= await getStdin(); 
-
+    var stdin= await getStdin(); 
 	var json= JSON.parse(stdin); 
-
-	cfg= json.data['webconsole-config.yaml'];
+	cfg= json.data['console-config.yaml'];
 
 	// Get config or throw exception on error
 	try {
-  		var config = yaml.safeLoad(cfg,"JSON_SCHEMA");
-  		var consoleURL = config.clusterInfo.consolePublicURL;
+		  var config = yaml.safeLoad(cfg,"JSON_SCHEMA");
+		  var consoleURL = config.clusterInfo.consoleBaseAddress;
 		  var lastChar = consoleURL.substr(-1);
 		  if (lastChar == '/') {
 			 // trim off the trailing '/'
 			 consoleURL = consoleURL.substr(0, consoleURL.length-1);
 		  }
-  		console.log(consoleURL); 
+		  console.log(consoleURL); 
 	} catch (e) {
   		console.log(e);
   		process.exit(1); 
