@@ -140,11 +140,6 @@
       fi
     fi
 
-    # TODO: need to decide what to do about these on openshift
-
-    sed -i "s|KIBANA_URL|https://$host:$port/kibana/app/kibana|" /initfiles/builtin.yaml
-    sed -i "s|GRAFANA_URL|https://$host:$port/grafana|" /initfiles/builtin.yaml
-
     # all changes have been made to builtin.yaml at this point except namespace
     # so set that too, and then create the builtin config map
 
