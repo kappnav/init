@@ -31,7 +31,13 @@ const getStdin = require('get-stdin');
 	// Get config or throw exception on error
 	try {
   		var config = yaml.safeLoad(cfg,"JSON_SCHEMA");
-  		console.log(config.clusterInfo.adminConsolePublicURL); 
+  		var consoleURL = config.clusterInfo.adminConsolePublicURL;
+		  var lastChar = consoleURL.substr(-1);
+		  if (lastChar == '/') {
+			 // trim off the trailing '/'
+			 consoleURL = consoleURL.substr(0, consoleURL.length-1);
+		  }
+  		console.log(consoleURL); 
 	} catch (e) {
   		console.log(e);
   		process.exit(1); 

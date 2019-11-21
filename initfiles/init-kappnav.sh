@@ -63,8 +63,29 @@
 
   elif [ x$HOOK_MODE = x'postinstall' ]; then
 
-    if [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' -o x$KUBE_ENV = 'xocp' ]; then
+    if [ x$KUBE_ENV = 'xminikube' ]; then
+        sed -i "s|OPENSHIFT_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
+    
+    elif [ x$KUBE_ENV = 'xocp' ]; then
+      config=$(kubectl get configmap console-config -n openshift-console -o json)
+      rc=$?
+      if [ $rc -eq 0 ]; then
+        # get openshift console URL
+        console=$(echo $config | node /js/getOCPConsoleURL.js)
+        rc=$?
+        if [ $rc -eq 0 ]; then
+          echo "Update builtin.yaml OPENSHIFT_CONSOLE_URL with "$console
+          sed -i "s|OPENSHIFT_CONSOLE_URL|$console|" /initfiles/builtin.yaml
+          echo "Update builtin.yaml OPENSHIFT_ADMIN_CONSOLE_URL with "$console
+          sed -i "s|OPENSHIFT_ADMIN_CONSOLE_URL|$console|" /initfiles/builtin.yaml
+        else
+          echo Could not retrieve console URL from console-config
+        fi
+      else
+          echo Could not retrieve console-config
+      fi
 
+    elif [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' ]; then
       config=$(kubectl get configmap webconsole-config -n openshift-web-console -o json)
       rc=$?
       if [ $rc -eq 0 ]; then
@@ -90,7 +111,12 @@
       else
         echo Could not retrieve webconsole-config
       fi
-      # kubectl apply -f /initfiles/route.appnav.yaml --validate=false
+  
+    else
+      echo Unsupported environment:  KUBE_ENV=$KUBE_ENV
+    fi
+
+    if [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd' -o x$KUBE_ENV = 'xocp' ]; then
       routeHost=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.host})
 
       if [ -z routeHost ]; then
@@ -100,7 +126,6 @@
       fi
 
       # now form kappnav URL and store in kappnav config map
-
       routePath=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.path})
       kubectl get configmap kappnav-config -o json |  node /js/storeKeyValueToConfigmap.js kappnav-url https://$routeHost$routePath | kubectl apply -f -
 
@@ -108,25 +133,31 @@
         echo 'Could not update kappnav-config config map'
       fi
 
-      /initfiles/OKDConsoleIntegration.sh $routeHost
-
-    elif [ x$KUBE_ENV = 'xminikube' ]; then
-        sed -i "s|OPENSHIFT_CONSOLE_URL|http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!|" /initfiles/builtin.yaml
-    else
-      echo Unsupported environment:  KUBE_ENV=$KUBE_ENV
+      # Only minishift uses the scripts to setup OKD console 
+      # integrations for the time being
+      if [ x$KUBE_ENV == 'xminishift' ]; then
+        /initfiles/OKDConsoleIntegration.sh $routeHost
+      fi
     fi
-
-    # TODO: need to decide what to do about these on openshift
-
-    sed -i "s|KIBANA_URL|https://$host:$port/kibana/app/kibana|" /initfiles/builtin.yaml
-    sed -i "s|GRAFANA_URL|https://$host:$port/grafana|" /initfiles/builtin.yaml
 
     # all changes have been made to builtin.yaml at this point except namespace
     # so set that too, and then create the builtin config map
 
     kubectl apply --validate=false -f /initfiles/builtin.yaml
 
+    if [ -f /initfiles/plugin-post-init.sh ]; then
+      /initfiles/plugin-post-init.sh
+    fi
+
   elif [ x$HOOK_MODE = x'predelete' ]; then
+
+    # Delete any OKD console integrations.
+    # Using scripts for now but the controller should do this once 
+    # we get the go install operator
+    if [ x$KUBE_ENV = 'xminishift' -o x$KUBE_ENV = 'xokd']; then
+      routeHost=$(kubectl get route kappnav-ui-service -o=jsonpath={@.spec.host})
+      /initfiles/OKDConsoleIntegration.sh $routeHost
+    fi
 
     if [ x$KUBE_ENV = 'xminikube' ]; then
       echo 'use minikube file list'
