@@ -2,7 +2,7 @@
 
 # init
 
-The init component completes application navigator initialization by running a post-install job. 
+The init component is no longer used by kAppNav.  It was used through release 0.1.4 to complete application navigator initialization by running a post-install job. 
 
 ## build
 
